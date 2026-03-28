@@ -64,7 +64,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "cert_verify.wsgi.application"
 
 # ── Database — MySQL ──────────────────────────────────────────
-DATABASES = {
+'''DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME":     os.getenv("DB_NAME",     "certverify_db"),
@@ -75,6 +75,17 @@ DATABASES = {
         "OPTIONS": {
             "charset": "utf8mb4",
         },
+    }
+}'''
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME":     os.environ.get("DB_NAME"),
+        "USER":     os.environ.get("DB_USER"),
+        "PASSWORD": os.environ.get("DB_PASSWORD"),
+        "HOST":     os.environ.get("DB_HOST"),
+        "PORT":     os.environ.get("DB_PORT", "3306"),
     }
 }
 
