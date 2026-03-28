@@ -1,5 +1,5 @@
 setuptools==68.0.0
-Django==4.2.9
+Django==4.2.20
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.1
 django-cors-headers==4.3.1
