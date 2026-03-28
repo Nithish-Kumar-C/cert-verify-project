@@ -78,7 +78,7 @@ def issue_on_blockchain(cert_hash_hex: str, student_name: str,
     # Convert hex string to bytes32
     cert_hash_bytes = bytes.fromhex(cert_hash_hex.replace("0x", ""))
 
-    tx = contract.functions.issueCertificate(
+    '''tx = contract.functions.issueCertificate(
         cert_hash_bytes,
         student_name,
         course,
@@ -89,6 +89,19 @@ def issue_on_blockchain(cert_hash_hex: str, student_name: str,
         "nonce":    w3.eth.get_transaction_count(account.address),
         "gas":      500000,
         "gasPrice": w3.eth.gas_price*2,
+    })'''
+
+    tx = contract.functions.issueCertificate(
+        cert_hash_bytes,
+        student_name,
+        course,
+        grade,
+        ipfs_cid
+    ).build_transaction({
+        "from":     account.address,
+        "nonce":    w3.eth.get_transaction_count(account.address),
+        "gas":      1000000,
+        "gasPrice": w3.to_wei("50", "gwei"),
     })
 
     signed = w3.eth.account.sign_transaction(tx, settings.ADMIN_PRIVATE_KEY)
