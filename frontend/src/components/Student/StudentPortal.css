@@ -1,0 +1,51 @@
+.student {
+  min-height: 100vh;
+  padding: 6rem 2rem 3rem;
+  max-width: 900px;
+  margin: 0 auto;
+  animation: fadeIn 0.5s ease;
+}
+
+.student__badge  { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.28rem 0.8rem; background: var(--color-success-glow); border: 1px solid rgba(16,185,129,0.3); border-radius: 99px; font-size: 0.72rem; font-weight: 700; color: var(--color-success); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.65rem; }
+.student__title  { font-family: var(--font-display); font-size: 2rem; color: var(--color-text); }
+.student__sub    { font-size: 0.88rem; color: var(--color-text-muted); margin-top: 0.25rem; margin-bottom: 2rem; }
+
+/* Certificate Card */
+.student__card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  transition: var(--transition);
+}
+.student__card:hover      { border-color: rgba(59,130,246,0.35); box-shadow: var(--shadow-primary); }
+
+.student__card-top        { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.5rem; }
+.student__card-left       { flex: 1; }
+.student__card-course     { font-family: var(--font-display); font-size: 1.25rem; color: var(--color-text); margin-bottom: 0.2rem; }
+.student__card-institute  { font-size: 0.85rem; color: var(--color-primary); font-weight: 600; margin-bottom: 0.85rem; }
+
+.student__card-metas      { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.student__meta-item       { display: flex; flex-direction: column; gap: 0.1rem; }
+.student__meta-label      { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--color-text-muted); }
+.student__meta-val        { font-size: 0.85rem; color: var(--color-text-light); }
+
+/* QR placeholder */
+.student__qr              { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex-shrink: 0; }
+.student__qr-box          { width: 84px; height: 84px; background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 2.2rem; }
+.student__qr-label        { font-size: 0.63rem; color: var(--color-text-muted); text-align: center; }
+
+/* Bottom bar */
+.student__card-bottom     { padding: 0.85rem 1.5rem; background: var(--color-surface-2); border-top: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.student__card-hash       { font-family: monospace; font-size: 0.7rem; color: var(--color-text-muted); }
+.student__card-actions    { display: flex; gap: 0.5rem; }
+
+.student__empty           { text-align: center; padding: 4rem 2rem; color: var(--color-text-muted); }
+.student__empty-icon      { font-size: 3rem; margin-bottom: 1rem; }
+.student__empty-text      { font-size: 0.9rem; }
+
+@media (max-width: 600px) {
+  .student__card-top    { flex-direction: column-reverse; }
+  .student__qr          { flex-direction: row; }
+}

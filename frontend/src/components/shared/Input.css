@@ -1,0 +1,35 @@
+.field               { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.field__label        { font-size: 0.76rem; font-weight: 700; color: var(--color-text-light); text-transform: uppercase; letter-spacing: 0.07em; }
+
+.field__req          { color: var(--color-danger); margin-left: 2px; }
+
+.field__input,
+.field__select       {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: 0.88rem;
+  font-family: var(--font-body);
+  transition: var(--transition);
+}
+
+.field__input::placeholder  { color: var(--color-text-muted); }
+
+.field__input:focus,
+.field__select:focus         {
+  border-color: var(--color-primary);
+  background: var(--color-surface-2);
+  box-shadow: 0 0 0 3px var(--color-primary-glow);
+}
+
+.field__input--err           { border-color: var(--color-danger) !important; }
+.field__input--err:focus     { box-shadow: 0 0 0 3px var(--color-danger-glow); }
+
+.field__select               { appearance: none; cursor: pointer; }
+
+.field__error                { font-size: 0.76rem; color: var(--color-danger); }
+.field__hint                 { font-size: 0.76rem; color: var(--color-text-muted); }

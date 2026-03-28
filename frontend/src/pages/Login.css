@@ -1,0 +1,61 @@
+/* ── Login Page ─────────────────────────────────────────────── */
+.login {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem;
+  background: radial-gradient(ellipse at 50% 30%, rgba(59,130,246,0.06) 0%, transparent 60%);
+}
+.login__card {
+  width: 100%; max-width: 420px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 2.5rem 2rem;
+  animation: fadeInUp 0.4s ease;
+}
+.login__brand {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin-bottom: 1.75rem;
+}
+.login__brand-icon {
+  width: 34px; height: 34px;
+  background: var(--color-primary); border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; box-shadow: var(--shadow-primary);
+}
+.login__brand-name { font-family: var(--font-display); font-size: 1.15rem; color: var(--color-text); }
+.login__title { font-family: var(--font-display); font-size: 1.6rem; color: var(--color-text); margin-bottom: 0.3rem; }
+.login__sub   { font-size: 0.875rem; color: var(--color-text-muted); margin-bottom: 1.5rem; }
+
+.login__tabs { display: flex; gap: 0; background: var(--color-bg); border-radius: var(--radius-md); padding: 3px; margin-bottom: 1.5rem; }
+.login__tab {
+  flex: 1; padding: 0.5rem; border-radius: calc(var(--radius-md) - 2px);
+  font-size: 0.85rem; font-weight: 600; color: var(--color-text-muted);
+  background: transparent; border: none; cursor: pointer; transition: var(--transition);
+}
+.login__tab--active { background: var(--color-surface); color: var(--color-text); box-shadow: var(--shadow-sm); }
+
+.login__form { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.25rem; }
+
+.login__error {
+  background: var(--color-danger-glow); border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--radius-md); padding: 0.7rem 1rem;
+  font-size: 0.83rem; color: var(--color-danger); margin-bottom: 1rem;
+}
+
+.login__divider {
+  text-align: center; position: relative; margin: 1.25rem 0;
+  color: var(--color-text-muted); font-size: 0.8rem;
+}
+.login__divider::before, .login__divider::after {
+  content: ""; position: absolute; top: 50%; width: 43%; height: 1px; background: var(--color-border);
+}
+.login__divider::before { left: 0; }
+.login__divider::after  { right: 0; }
+.login__divider span { background: var(--color-surface); padding: 0 0.5rem; position: relative; z-index: 1; }
+
+.login__verify-link {
+  text-align: center; margin-top: 1.25rem;
+  font-size: 0.82rem; color: var(--color-text-muted);
+}
+.login__verify-link a { color: var(--color-primary); cursor: pointer; }

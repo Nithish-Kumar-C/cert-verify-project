@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap');
+
+/* ── Dark Mode — Reddit Style ───────────────────────────────── */
+:root {
+  --color-bg:           #1a1a1b;
+  --color-surface:      #272729;
+  --color-surface-2:    #333335;
+  --color-border:       #3c3c3e;
+  --color-primary:      #ff4500;
+  --color-primary-dark: #e03d00;
+  --color-primary-glow: rgba(255,69,0,0.15);
+  --color-success:      #46d160;
+  --color-success-glow: rgba(70,209,96,0.12);
+  --color-danger:       #ff585b;
+  --color-danger-glow:  rgba(255,88,91,0.12);
+  --color-warning:      #ffd635;
+  --color-text:         #d7dadc;
+  --color-text-muted:   #818384;
+  --color-text-light:   #9a9b9c;
+  --navbar-bg:          rgba(26,26,27,0.95);
+
+  --font-display: 'Playfair Display', serif;
+  --font-body:    'DM Sans', sans-serif;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg:      0 8px 32px rgba(0,0,0,0.6);
+  --shadow-primary: 0 0 24px rgba(255,69,0,0.22);
+  --shadow-success: 0 0 24px rgba(70,209,96,0.22);
+
+  --transition:      all 0.2s ease;
+  --transition-slow: all 0.4s ease;
+}
+
+/* ── Light Mode — Reddit Style ─────────────────────────────── */
+[data-theme="light"] {
+  --color-bg:           #f6f7f8;
+  --color-surface:      #ffffff;
+  --color-surface-2:    #f0f0f0;
+  --color-border:       #edeff1;
+  --color-primary:      #ff4500;
+  --color-primary-dark: #e03d00;
+  --color-primary-glow: rgba(255,69,0,0.12);
+  --color-success:      #46d160;
+  --color-success-glow: rgba(70,209,96,0.12);
+  --color-danger:       #ff585b;
+  --color-danger-glow:  rgba(255,88,91,0.12);
+  --color-warning:      #ffd635;
+  --color-text:         #1c1c1c;
+  --color-text-muted:   #878a8c;
+  --color-text-light:   #576f76;
+  --navbar-bg:          rgba(255,255,255,0.97);
+
+  --shadow-sm:      0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md:      0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg:      0 8px 32px rgba(0,0,0,0.10);
+  --shadow-primary: 0 0 24px rgba(255,69,0,0.15);
+  --shadow-success: 0 0 24px rgba(70,209,96,0.15);
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html  { font-size: 16px; scroll-behavior: smooth; }
+body  {
+  font-family: var(--font-body);
+  background:  var(--color-bg);
+  color:       var(--color-text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+a       { color: var(--color-primary); text-decoration: none; transition: var(--transition); }
+a:hover { color: var(--color-text); }
+button  { cursor: pointer; font-family: var(--font-body); border: none; outline: none; }
+input, select, textarea { font-family: var(--font-body); outline: none; }
+ul { list-style: none; }
+
+/* ── Scrollbar ─────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 5px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 10px; }
+
+/* Smooth theme transition */
+body, * { transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease; }
+
+/* ── Keyframes ─────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 6px var(--color-success); }
+  50%       { box-shadow: 0 0 16px var(--color-success); }
+}
+
+/* ── Utility ───────────────────────────────────────────────── */
+.animate-fade { animation: fadeIn 0.45s ease both; }
