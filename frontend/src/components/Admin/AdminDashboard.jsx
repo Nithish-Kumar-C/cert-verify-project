@@ -24,7 +24,6 @@ function AdminDashboard({ addToast }) {
   const [fetching, setFetching] = useState(true);
   const [success, setSuccess]   = useState(false);
 
-  // ── Search & Filter state ────────────────────────────────
   const [search, setSearch]       = useState("");
   const [filterStatus, setFilter] = useState("ALL");
 
@@ -35,7 +34,6 @@ function AdminDashboard({ addToast }) {
       .finally(() => setFetching(false));
   }, []);
 
-  // ── Filtered list ────────────────────────────────────────
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return certs.filter((c) => {
@@ -64,10 +62,10 @@ function AdminDashboard({ addToast }) {
       setCerts((p) => [res.data, ...p]);
       setForm(EMPTY_FORM);
       setSuccess(true);
-      setTimeout(() => setSuccess(false), 4000);
-      addToast("success", "Certificate issued on blockchain!");
+      setTimeout(() => setSuccess(false), 5000);
+      addToast("success", "Certificate issued! Blockchain confirmation in progress...");
     } catch (e) {
-      addToast("error", e.response?.data?.error || "Issue failed");
+      addToast("error", e.response?.data?.error || "Issue failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -90,14 +88,12 @@ function AdminDashboard({ addToast }) {
 
   return (
     <div className="admin">
-      {/* Header */}
       <div>
         <div className="admin__badge">🏛 Admin Panel</div>
         <h1 className="admin__title">Institute Dashboard</h1>
         <p className="admin__sub">Manage and issue blockchain-verified certificates</p>
       </div>
 
-      {/* Stats */}
       <div className="admin__stats">
         <div className="admin__stat">
           <div className="admin__stat-label">Total Issued</div>
@@ -114,7 +110,6 @@ function AdminDashboard({ addToast }) {
       </div>
 
       <div className="admin__grid">
-        {/* Issue Form */}
         <div className="admin__card">
           <div className="admin__card-head">
             <span className="admin__card-title">📄 Issue New Certificate</span>
@@ -122,7 +117,8 @@ function AdminDashboard({ addToast }) {
           <div className="admin__card-body">
             {success && (
               <div className="admin__success">
-                ✅ Certificate issued and stored on Ethereum blockchain!
+                ✅ Certificate saved! Blockchain confirmation happening in background (takes 1-2 min).
+                The certificate is now visible below.
               </div>
             )}
             <div className="admin__form">
@@ -137,19 +133,17 @@ function AdminDashboard({ addToast }) {
                 <Input  label="Issue Date" name="issue_date" type="date" value={form.issue_date} onChange={handleChange} required />
               </div>
               <Button variant="primary" full loading={loading} onClick={handleIssue}>
-                {loading ? "Storing on Blockchain..." : "⛓ Issue Certificate"}
+                {loading ? "⏳ Saving Certificate..." : "⛓ Issue Certificate"}
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Certificate List with Search + Filter */}
         <div className="admin__card">
           <div className="admin__card-head">
             <span className="admin__card-title">📋 Issued Certificates</span>
           </div>
 
-          {/* Search Bar */}
           <div className="admin__search-bar">
             <input
               className="admin__search-input"
@@ -188,6 +182,9 @@ function AdminDashboard({ addToast }) {
                     <div className="admin__list-name">{cert.student_name}</div>
                     <div className="admin__list-meta">{cert.course} · {cert.grade}</div>
                     <div className="admin__list-hash">#{(cert.cert_hash || "").slice(0, 20)}...</div>
+                    {cert.tx_hash === "0xPENDING" && (
+                      <div className="admin__list-pending">⏳ Blockchain confirmation pending...</div>
+                    )}
                   </div>
                   <div className="admin__list-right">
                     <span className={`badge ${cert.status === "ACTIVE" ? "badge--active" : "badge--revoked"}`}>

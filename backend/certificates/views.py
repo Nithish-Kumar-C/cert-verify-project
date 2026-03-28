@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django.utils import timezone
 from django.contrib.auth.models import User
+import threading
 
 from .models import Certificate, Student, Institute
 from .serializers import CertificateSerializer, IssueCertificateSerializer
@@ -15,38 +16,72 @@ from users.models import UserProfile
 
 
 def create_student_account(student_name, student_email, roll_number):
-    """
-    Auto-create student login account when certificate is issued.
-    Password = first 2 letters of name (capitalized) + roll number
-    Example: Nithish Kumar + 23106035 → Ni23106035
-    """
-    # Generate password
     name_part = student_name.strip()[:2].capitalize()
     password  = f"{name_part}{roll_number}"
-
-    # Check if user already exists
-    existing = User.objects.filter(email=student_email).first()
+    existing  = User.objects.filter(email=student_email).first()
     if existing:
-        return existing, password, False  # Already exists
-
-    # Create username from email
+        return existing, password, False
     username_base = student_email.split("@")[0]
     username      = username_base
     counter       = 1
     while User.objects.filter(username=username).exists():
         username = f"{username_base}{counter}"
         counter += 1
-
-    # Create user
     user = User.objects.create_user(
-        username=username,
-        email=student_email,
-        password=password,
-        first_name=student_name,
+        username=username, email=student_email,
+        password=password, first_name=student_name,
     )
     UserProfile.objects.create(user=user, role="student")
+    return user, password, True
 
-    return user, password, True  # Newly created
+
+def blockchain_and_email_task(certificate_id, cert_hash, student_name, course,
+                               grade, roll_number, student_email, institute_name,
+                               frontend_url, default_from_email):
+    """Run blockchain + email in background thread so API responds immediately."""
+    try:
+        tx_hash = issue_on_blockchain(
+            cert_hash_hex = cert_hash,
+            student_name  = student_name,
+            course        = course,
+            grade         = grade,
+            ipfs_cid      = "",
+        )
+        Certificate.objects.filter(id=certificate_id).update(tx_hash=tx_hash)
+    except Exception as e:
+        print(f"Blockchain error (background): {e}")
+
+    # Email student
+    try:
+        from django.core.mail import send_mail
+        name_part  = student_name.strip()[:2].capitalize()
+        login_pass = f"{name_part}{roll_number}"
+        send_mail(
+            subject = f"Your Certificate is Ready — {institute_name}",
+            message = f"""Dear {student_name},
+
+Your certificate has been issued by {institute_name}.
+
+Certificate Details:
+  Course     : {course}
+  Grade      : {grade}
+  Hash       : {cert_hash}
+
+Verify your certificate at:
+{frontend_url}/verify?hash={cert_hash}
+
+Login to view your certificate:
+  URL      : {frontend_url}/student-login
+  Email    : {student_email}
+  Password : {login_pass}
+
+— CertVerify Team""",
+            from_email     = default_from_email,
+            recipient_list = [student_email],
+            fail_silently  = True,
+        )
+    except Exception as e:
+        print(f"Email error (background): {e}")
 
 
 # ─── Issue Certificate ─────────────────────────────────────────
@@ -64,13 +99,11 @@ def issue_certificate(request):
     except Institute.DoesNotExist:
         return Response({"error": "Institute profile not found"}, status=403)
 
-    # Only approved institutes can issue
     if not institute.is_approved:
         return Response({
             "error": "Your institute is not approved yet. Contact admin for approval."
         }, status=403)
 
-    # Generate hash
     cert_hash = Certificate.generate_hash(
         student_name   = data["student_name"],
         roll_number    = data["roll_number"],
@@ -83,7 +116,6 @@ def issue_certificate(request):
     if Certificate.objects.filter(cert_hash=cert_hash).exists():
         return Response({"error": "This certificate has already been issued"}, status=400)
 
-    # Save student record
     student, _ = Student.objects.get_or_create(
         institute=institute,
         roll_number=data["roll_number"],
@@ -93,26 +125,13 @@ def issue_certificate(request):
         },
     )
 
-    # ── Auto create student login account ─────────────────────
     student_user, auto_password, is_new = create_student_account(
         student_name  = data["student_name"],
         student_email = data["student_email"],
         roll_number   = data["roll_number"],
     )
 
-    # Store on blockchain
-    try:
-        tx_hash = issue_on_blockchain(
-            cert_hash_hex = cert_hash,
-            student_name  = data["student_name"],
-            course        = data["course"],
-            grade         = data["grade"],
-            ipfs_cid      = "",
-        )
-    except Exception as e:
-        return Response({"error": f"Blockchain error: {str(e)}"}, status=503)
-
-    # Save in MySQL
+    # ── Save to DB immediately — blockchain runs in background ──
     certificate = Certificate.objects.create(
         student    = student,
         institute  = institute,
@@ -120,60 +139,25 @@ def issue_certificate(request):
         grade      = data["grade"],
         issue_date = data["issue_date"],
         cert_hash  = cert_hash,
-        tx_hash    = tx_hash,
+        tx_hash    = "0xPENDING",   # updated by background thread
         status     = "ACTIVE",
     )
 
-    # Generate PDF + upload to IPFS (best effort)
-    try:
-        pdf_bytes = generate_certificate_pdf(
-            student_name   = data["student_name"],
-            course         = data["course"],
-            grade          = data["grade"],
-            issue_date     = str(data["issue_date"]),
-            institute_name = institute.name,
-            cert_hash      = cert_hash,
-            roll_number    = data["roll_number"],
-        )
-        ipfs_cid = upload_pdf_to_ipfs(pdf_bytes, f"cert_{data['roll_number']}.pdf")
-        certificate.ipfs_cid = ipfs_cid
-        certificate.save()
-    except Exception:
-        pass
-
-    # Email student with certificate + login credentials
-    try:
-        from django.core.mail import send_mail
-        from django.conf import settings
-        name_part    = data["student_name"].strip()[:2].capitalize()
-        login_pass   = f"{name_part}{data['roll_number']}"
-        send_mail(
-            subject = f"Your Certificate is Ready — {institute.name}",
-            message = f"""Dear {data['student_name']},
-
-Your certificate has been issued by {institute.name}.
-
-Certificate Details:
-  Course     : {data['course']}
-  Grade      : {data['grade']}
-  Issue Date : {data['issue_date']}
-  Hash       : {cert_hash}
-
-Verify your certificate at:
-{settings.FRONTEND_URL}/verify?hash={cert_hash}
-
-Login to view your certificate:
-  URL      : {settings.FRONTEND_URL}/student-login
-  Email    : {data['student_email']}
-  Password : {login_pass}
-
-— CertVerify Team""",
-            from_email      = settings.DEFAULT_FROM_EMAIL,
-            recipient_list  = [data["student_email"]],
-            fail_silently   = True,
-        )
-    except Exception:
-        pass
+    # ── Start blockchain + email in background thread ───────────
+    from django.conf import settings
+    t = threading.Thread(
+        target = blockchain_and_email_task,
+        args   = (
+            certificate.id, cert_hash,
+            data["student_name"], data["course"], data["grade"],
+            data["roll_number"], data["student_email"],
+            institute.name,
+            settings.FRONTEND_URL,
+            settings.DEFAULT_FROM_EMAIL,
+        ),
+        daemon = True,
+    )
+    t.start()
 
     response_data = CertificateSerializer(certificate).data
     response_data["student_login"] = {
@@ -253,10 +237,6 @@ def list_certificates(request):
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def student_certificates(request):
-    """
-    GET /api/certificates/my/
-    Returns certificates for logged-in student by email.
-    """
     students = Student.objects.filter(email=request.user.email)
     certs    = Certificate.objects.filter(
         student__in=students
