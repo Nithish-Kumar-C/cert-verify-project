@@ -10,7 +10,6 @@ from .models import Certificate, Student, Institute
 from .serializers import CertificateSerializer, IssueCertificateSerializer
 from .blockchain_service import issue_on_blockchain, revoke_on_blockchain, verify_on_blockchain
 from .email_service import send_certificate_email
-from .pdf_service import generate_certificate_pdf
 from .ipfs_service import upload_pdf_to_ipfs
 from users.models import UserProfile
 
@@ -44,9 +43,16 @@ def blockchain_and_email_task(certificate_id, cert_hash, student_name, course,
     ipfs_cid = ""
     try:
         from .pdf_service import generate_certificate_pdf
-        from .ipfs_service import upload_pdf_to_ipfs
         certificate = Certificate.objects.get(id=certificate_id)
-        pdf_bytes = generate_certificate_pdf(certificate)
+        pdf_bytes = generate_certificate_pdf(
+            student_name   = student_name,
+            course         = course,
+            grade          = grade,
+            issue_date     = str(certificate.issue_date),
+            institute_name = institute_name,
+            cert_hash      = cert_hash,
+            roll_number    = roll_number,
+        )
         ipfs_cid = upload_pdf_to_ipfs(pdf_bytes, f"cert_{roll_number}.pdf")
         Certificate.objects.filter(id=certificate_id).update(ipfs_cid=ipfs_cid)
         print(f"IPFS upload success: {ipfs_cid}")
@@ -146,7 +152,6 @@ def issue_certificate(request):
         roll_number   = data["roll_number"],
     )
 
-    # ── Save to DB immediately — blockchain runs in background ──
     certificate = Certificate.objects.create(
         student    = student,
         institute  = institute,
@@ -158,7 +163,6 @@ def issue_certificate(request):
         status     = "ACTIVE",
     )
 
-    # ── Start blockchain + IPFS + email in background thread ───
     from django.conf import settings
     t = threading.Thread(
         target = blockchain_and_email_task,
