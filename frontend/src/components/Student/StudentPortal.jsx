@@ -131,6 +131,18 @@ function StudentPortal({ addToast }) {
                   >
                     {downloading === cert.id ? "Generating..." : "⬇ Download PDF"}
                   </Button>
+
+                  {cert.ipfs_cid && (
+                    <a
+                      href={`https://gateway.pinata.cloud/ipfs/${cert.ipfs_cid}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn--ghost btn--sm"
+                    >
+                      🌐 View on IPFS
+                    </a>
+                  )}
+
                 </div>
               </div>
             </div>
