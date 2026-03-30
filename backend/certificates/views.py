@@ -38,20 +38,35 @@ def create_student_account(student_name, student_email, roll_number):
 def blockchain_and_email_task(certificate_id, cert_hash, student_name, course,
                                grade, roll_number, student_email, institute_name,
                                frontend_url, default_from_email):
-    """Run blockchain + email in background thread so API responds immediately."""
+    """Run blockchain + IPFS + email in background thread."""
+
+    # Step 1 — Generate PDF and upload to IPFS
+    ipfs_cid = ""
+    try:
+        from .pdf_service import generate_certificate_pdf
+        from .ipfs_service import upload_pdf_to_ipfs
+        certificate = Certificate.objects.get(id=certificate_id)
+        pdf_bytes = generate_certificate_pdf(certificate)
+        ipfs_cid = upload_pdf_to_ipfs(pdf_bytes, f"cert_{roll_number}.pdf")
+        Certificate.objects.filter(id=certificate_id).update(ipfs_cid=ipfs_cid)
+        print(f"IPFS upload success: {ipfs_cid}")
+    except Exception as e:
+        print(f"IPFS upload error: {e}")
+
+    # Step 2 — Store on blockchain
     try:
         tx_hash = issue_on_blockchain(
             cert_hash_hex = cert_hash,
             student_name  = student_name,
             course        = course,
             grade         = grade,
-            ipfs_cid      = "",
+            ipfs_cid      = ipfs_cid,
         )
         Certificate.objects.filter(id=certificate_id).update(tx_hash=tx_hash)
     except Exception as e:
         print(f"Blockchain error (background): {e}")
 
-    # Email student
+    # Step 3 — Email student
     try:
         from django.core.mail import send_mail
         name_part  = student_name.strip()[:2].capitalize()
@@ -139,11 +154,11 @@ def issue_certificate(request):
         grade      = data["grade"],
         issue_date = data["issue_date"],
         cert_hash  = cert_hash,
-        tx_hash    = "0xPENDING",   # updated by background thread
+        tx_hash    = "0xPENDING",
         status     = "ACTIVE",
     )
 
-    # ── Start blockchain + email in background thread ───────────
+    # ── Start blockchain + IPFS + email in background thread ───
     from django.conf import settings
     t = threading.Thread(
         target = blockchain_and_email_task,
