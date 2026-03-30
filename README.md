@@ -1,6 +1,6 @@
 # 🎓 CertVerify — Blockchain Certificate Verification System
 
-A full-stack Web3 project using React, Django, MySQL, Solidity, Foundry and Ethers.js.
+A full-stack Web3 project using React, Django, MySQL, Solidity, Foundry and Ethers.js
 
 ---
 
