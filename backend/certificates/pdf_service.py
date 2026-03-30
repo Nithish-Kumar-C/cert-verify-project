@@ -10,7 +10,7 @@ from .models import Certificate, Student, Institute
 from .serializers import CertificateSerializer, IssueCertificateSerializer
 from .blockchain_service import issue_on_blockchain, revoke_on_blockchain, verify_on_blockchain
 from .email_service import send_certificate_email
-from .pdf_service import generate_certificate_pdf
+
 from .ipfs_service import upload_pdf_to_ipfs
 from users.models import UserProfile
 
